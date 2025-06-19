@@ -3,7 +3,7 @@
 ## Introduction
 This simulator is designed to efficiently simulate quantum circuits on a classical computer using Torch.tensor operations on GPU or CPU.
 
-Unlike frameworks like Qiskit and Qibo, we do not use a quantum circuit object. Instead, the system size is determined by the input vector, where \( \text{len}(\text{vector}) = 2^n \), with \( n \) being the number of qubits. This approach simplifies the merging of circuits. Furthermore, in actual hardware implementations, there is no quantum circuit object—only instructions for qubits. The gate sequence object serves as one such instruction.
+Unlike frameworks like Qiskit and Qibo, we do not use a quantum circuit object. Instead, the system size is determined by the input vector, where \( $\text{len}(\text{vector}) = 2^n$ \), with \( $n$ \) being the number of qubits. This approach simplifies the merging of circuits. Furthermore, in actual hardware implementations, there is no quantum circuit object—only instructions for qubits. The gate sequence object serves as one such instruction.
 
 ## gate_sequence
 
