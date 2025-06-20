@@ -3,9 +3,16 @@ from fundamental_gates_functions import create_name_for_ancilla
 from fundamental_digital_functions import binary_form_of_integer
 
 def O_BS_A(n_qubits, l, sparse_indices, order):
-    # formula A4
-    # order == 0 : |0>|s>|i> --> |r_{si}>|i>,   order == 1 : |s>|0>|i> --> |r_{si}>|i>
-    gate_sequence = []
+    """
+    This function construct the O_BS_A oracle, see https://arxiv.org/pdf/2405.12855 Lemma 1 for more details.
+
+    parameters:
+    n_qubits: the number of the main register qubits
+    l: the number of the sparse register qubits
+    sparse_indices: array of sparse indices in the firs row
+    order == 0 : |0>|s>|i> --> |r_{si}>|i>,   order == 1 : |s>|0>|i> --> |r_{si}>|i>
+    """
+
     u_la = U_lA(n_qubits, l, sparse_indices, order)
     u_sum = U_SUM(n_qubits, 0)
 
@@ -18,10 +25,15 @@ def O_BS_A(n_qubits, l, sparse_indices, order):
 
 def U_SUM(n_qubits, target_register):
     """
-    target_register controls where to write the answer
+    This function construct the U_SUM gate in https://arxiv.org/pdf/2405.12855 appendix A Eq.(A2), this oracle
+    implements addition operation, it transforms state |i>|j> to |i+j modulo 2>|j>.
+
+
+    parameters:
+    n_qubits: the number of the main register qubits
+    target_register: controls where to write the answer
     if target_register==1:
     U_SUM|i>|j>=U_SUM|i>|j+i modulo 2>
-
     if target_register==0:
     U_SUM|i>|j>=U_SUM|i+j modulo 2>|j>
 
@@ -31,7 +43,6 @@ def U_SUM(n_qubits, target_register):
     n_qubits first register
     n_qubits  second register
     n_qubits-1 pure ancillas
-
     """
     gate_sequence = []
 
@@ -126,32 +137,24 @@ def U_SUM(n_qubits, target_register):
     return gate_sequence
 
 
-"""
-This is U^{(l)}_A from the paper
-
-it transform the sparse index into the first row index of the Banded-Sparse matrix (row i is the i-th time permuted first row) |0>|r> --> |i> 
-
-l is the sparse register
-
-n_qubits -- main register
-
-if order ==0:|0>|r> --> |i> the sparse register is the first one
-
-if order==1:|r>|0> --> |i> the sparse register is the second one
-
-sparse_indexes -- array of sparse indexes of the firs row (r_s0 from the paper) IN THE DECIMAL FORMAT
-
-Totally the circuit use:
-
-1)n_qubits -- main register
-2)1 -- pure ancilla
-
-len(sparse_indexes)<=2^l
-"""
-
 def U_lA(n_qubits, l, sparse_indices, order):
-    # see formula A5
+    """
+    This is U^{(l)}_A from the paper https://arxiv.org/pdf/2405.12855 appendix A, it transforms the sparse index
+    into the first row index of the Banded-Sparse matrix (row i is the i-th time permuted first row) |0>|r> --> |i>
 
+    parameters:
+    l is the sparse register
+    n_qubits -- number of main register qubits
+    if order ==0:|0>|r> --> |i> the sparse register is the first one
+    if order==1:|r>|0> --> |i> the sparse register is the second one
+    sparse_indexes -- array of sparse indexes of the firs row (r_s0 from the paper) IN THE DECIMAL FORMAT
+
+    Totally the circuit use:
+    1)n_qubits -- number of main register qubits
+    2)1 -- pure ancilla
+
+    len(sparse_indexes)<=2^l
+    """
     if not all(x < y for x, y in zip(sparse_indices, sparse_indices[1:])):
         raise ValueError("The sequence sparse_indexes is not a strictly increasing sequence.")
 
@@ -182,23 +185,31 @@ def U_lA(n_qubits, l, sparse_indices, order):
             for a in np.arange(l, n_qubits - l):
                 for b in np.arange(l):
                     gate_sequence += [{'name': 'swap', 'target': [a - b - 1, a - b]}]
-
     return gate_sequence
 
 
-def Urs0(n_qubits, l, s, sparse_index, ancilla_name):
-    # an auxiliary unitary U_s^rs0 from the paper
-    # s -- DECIMAl
-    # sparse_index -- DECIMAL
+def Urs0(n_qubits, l, s, column_index, ancilla_name):
+    """
+    This function construct the auxiliary unitary U_s^rs0, it transforms the sparse index `s` into the
+    first row index `sparse_index` of the Banded-Sparse matrix (row i is the i-th time permuted first row)
+    |0>|s> --> |sparse_index>. See https://arxiv.org/pdf/2405.12855 appendix A Eq.(5) for more details.
+
+    parameters:
+    l is the sparse register
+    n_qubits -- number of main register qubits
+    s -- the sparse index (IN THE DECIMAL FORMAT)
+    sparse_index -- the column index of the s-th non-zero element in the first row (IN THE DECIMAL FORMAT)
+    ancilla_name -- the name of the ancilla qubit 'a', see figure 8 in https://arxiv.org/pdf/2405.12855
+    """
     gate_sequence = [{"name": "create_ancilla", "parameter": ancilla_name}]
 
     # which state need to be controlled for the first multi-controlled x SELECT|0>|s>
     first_control_sequence = [0 for i in range(n_qubits - l)] + list(map(int, binary_form_of_integer(s, l)))
 
     # SELECT|rs0>
-    last_control_sequence = list(map(int, binary_form_of_integer(sparse_index, n_qubits)))
+    last_control_sequence = list(map(int, binary_form_of_integer(column_index, n_qubits)))
 
-    # X/I sequence where to apply X according to the second layer of the figure 8
+    # X/I sequence where to apply X according to the second layer of the figure 8 in article https://arxiv.org/pdf/2405.12855
     # compare first_control_sequence and last_control_sequence if a[i]!=b[i] need X gate on that i-th qubit (XOR logical)
     X_target_sequence = np.bitwise_xor(first_control_sequence, last_control_sequence).tolist()
 
@@ -206,7 +217,7 @@ def Urs0(n_qubits, l, s, sparse_index, ancilla_name):
     gate_sequence += [{"name": "X", "control": [i for i in range(n_qubits)], "target": [ancilla_name],
                       "control_sequence": first_control_sequence}]
 
-    # layer of X/I see fig 8
+    # layer of X/I see figure 8
     for i in range(n_qubits):
         if X_target_sequence[i] == 1:
             gate_sequence += [{"name": "X", "control": [ancilla_name], "target": [i], "control_sequence": [1]}]
@@ -217,8 +228,3 @@ def Urs0(n_qubits, l, s, sparse_index, ancilla_name):
 
     gate_sequence += [{"name": "kill_ancilla", "parameter": ancilla_name}]
     return gate_sequence
-
-
-
-if __name__ == "__main__":
-    print(U_SUM(10, 0))
