@@ -7,8 +7,7 @@ from qiskit import transpile
 
 def Ux(n, transpose):
     """
-    This function construct the auxiliary unitary Ux for the coordinate polynomial oracle Ox,
-    see https://arxiv.org/pdf/2411.01131 appendix C for more details.
+    This function construct the auxiliary unitary Ux for the coordinate polynomial oracle Ox, see https://arxiv.org/pdf/2411.01131 appendix C for more details.
     """
     number_of_qubits = int(np.ceil(np.log2(n)))
 
