@@ -1,7 +1,7 @@
 from Sparse_Maplitude_Oracle_for_Momentum_Operator import O_Spm_complete, O_Spm_not_banded_matirx
 from Banded_Sparse_Access_to_Momentum_Operator import O_BS_A
 from fundamental_gates_functions import dagger, create_name_for_ancilla
-from Amplitude_oracle_for_coordinate_operator_Ox import Ox, Ox_general
+from Amplitude_oracle_for_coordinate_operator_Ox import Ox
 import numpy as np
 
 
