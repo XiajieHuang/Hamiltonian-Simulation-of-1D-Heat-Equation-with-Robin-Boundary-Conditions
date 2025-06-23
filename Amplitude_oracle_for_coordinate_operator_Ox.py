@@ -4,7 +4,7 @@ import numpy as np
 
 def Ox(n):
     """
-    This function construct a (1, ceil(log2(n)), 0)-block-encoding for diagonal matrix $\diag(-1, -1+2/(2^n-1), -1+4/(2^n-1), ..., 1-2/(2^n-1), 1)$,
+    This function construct a (1, ceil(log2(n)), 0)-block-encoding for diagonal matrix $diag(-1, -1+2/(2^n-1), -1+4/(2^n-1), ..., 1-2/(2^n-1), 1)$,
     it is called coordinate-polynomial-oracle. One is referred to https://arxiv.org/pdf/2411.01131 appendix C  for detailed discussions of this oracle.
     """
     gate_sequence = [] # The gate sequence of this unitary
