@@ -4,6 +4,9 @@ from fundamental_gates_functions import dagger, create_name_for_ancilla
 from Amplitude_oracle_for_coordinate_operator_Ox import Ox
 import numpy as np
 
+"""
+This function construct a Block-Encoding of the Hamiltonian for the Schrödingerized Heat Equation with Robin Boundary Conditions
+"""
 
 def Heat_Equation_Hamiltonain_Robin(n_x, n_eta, left_x, right_x, L_eta, alpha1, alpha2):
     m = 2
